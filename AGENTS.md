@@ -4,6 +4,16 @@ This is a HTTP microservice written using a minimalist Elixir stack instead of t
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
 
+## Git guidelines
+
+- Write commit messages in pt-BR
+- Use semantic commit format: `tipo: descrição`
+- Common types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `style`
+- Examples:
+  - `feat: adiciona decoder JWT`
+  - `fix: corrige validação de nome`
+  - `refactor: extrai validação de seed para módulo separado`
+
 ## Elixir guidelines
 
 - Elixir lists **do not support index based access via the access syntax**
