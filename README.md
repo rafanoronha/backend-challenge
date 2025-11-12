@@ -20,8 +20,11 @@ mix deps.get
 # Compilar o projeto
 mix compile
 
-# Iniciar o servidor
+# Iniciar o servidor (desenvolvimento)
 mix start
+
+# Ou iniciar com logs estruturados em JSON (produção)
+MIX_ENV=prod mix start
 ```
 
 A aplicação estará disponível em [`http://localhost:4000`](http://localhost:4000).
@@ -85,3 +88,10 @@ mix test --trace
 # Executa compilação com warnings como erros, formata código e roda todos os testes
 mix precommit
 ```
+
+## Observabilidade
+
+### Logs
+
+O serviço está configurado com logs estruturados em JSON para ambientes de produção, facilitando integração com plataformas de observabilidade.  
+Em desenvolvimento, os logs são formatados para melhor legibilidade humana.

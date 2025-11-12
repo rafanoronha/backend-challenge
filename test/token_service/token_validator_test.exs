@@ -144,7 +144,8 @@ defmodule TokenService.TokenValidatorTest do
     end
 
     test "logs specific error for non-prime seed" do
-      token = "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiMTAiLCJOYW1lIjoiSm9obiBEb2UifQ.xxx"
+      token =
+        "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiMTAiLCJOYW1lIjoiSm9obiBEb2UifQ.xxx"
 
       log =
         capture_log(fn ->

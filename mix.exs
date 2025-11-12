@@ -10,7 +10,8 @@ defmodule TokenService.MixProject do
       aliases: aliases(),
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      preferred_cli_env: [precommit: :test]
+      preferred_cli_env: [precommit: :test],
+      config_path: "config/config.exs"
     ]
   end
 
@@ -33,7 +34,8 @@ defmodule TokenService.MixProject do
       {:plug_cowboy, "~> 2.7"},
       {:joken, "~> 2.6"},
       {:jason, "~> 1.4"},
-      {:ecto, "~> 3.12"}
+      {:ecto, "~> 3.12"},
+      {:logger_json, "~> 6.2"}
     ]
   end
 
