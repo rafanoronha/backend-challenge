@@ -3,6 +3,8 @@ defmodule TokenService.TokenValidator do
   Validates JWT tokens by decoding and checking claims against business rules.
   """
 
+  require Logger
+
   alias TokenService.{JwtDecoder, Claims}
 
   @doc """
@@ -22,11 +24,25 @@ defmodule TokenService.TokenValidator do
   """
   def validate(token) do
     with {:ok, claims} <- JwtDecoder.decode(token),
-         changeset <- Claims.changeset(claims),
-         true <- changeset.valid? do
+         %Ecto.Changeset{valid?: true} <- Claims.changeset(claims) do
+      Logger.debug("Token validation succeeded")
       true
     else
-      _ -> false
+      {:error, :invalid_token} ->
+        Logger.debug("Token validation failed: invalid or malformed JWT")
+        false
+
+      %Ecto.Changeset{valid?: false} = changeset ->
+        errors = format_changeset_errors(changeset)
+        Logger.debug("Token validation failed: #{errors}")
+        false
     end
+  end
+
+  defp format_changeset_errors(changeset) do
+    changeset
+    |> Ecto.Changeset.traverse_errors(fn {msg, _opts} -> msg end)
+    |> Enum.map(fn {field, messages} -> "#{field}: #{Enum.join(messages, ", ")}" end)
+    |> Enum.join("; ")
   end
 end
