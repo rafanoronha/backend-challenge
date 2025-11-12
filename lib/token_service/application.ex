@@ -3,17 +3,17 @@ defmodule TokenService.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  require Logger
+
   use Application
 
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: TokenService.Worker.start_link(arg)
-      # {TokenService.Worker, arg}
+      {Plug.Cowboy, scheme: :http, plug: TokenService.Router, options: [port: 4000]}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
+    Logger.info("Starting TokenService on port 4000")
     opts = [strategy: :one_for_one, name: TokenService.Supervisor]
     Supervisor.start_link(children, opts)
   end

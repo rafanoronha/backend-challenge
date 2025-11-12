@@ -28,6 +28,7 @@ defmodule TokenService.MixProject do
 
   defp aliases do
     [
+      start: ["compile", "run --no-halt"],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end
