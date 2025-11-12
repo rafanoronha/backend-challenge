@@ -3,9 +3,9 @@ defmodule TokenService.Router do
 
   alias TokenService.TokenValidator
 
-  plug :match
-  plug Plug.Parsers, parsers: [:json], json_decoder: Jason
-  plug :dispatch
+  plug(:match)
+  plug(Plug.Parsers, parsers: [:json], json_decoder: Jason)
+  plug(:dispatch)
 
   get "/health" do
     send_resp(conn, 200, "Healthy")

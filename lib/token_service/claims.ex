@@ -9,9 +9,9 @@ defmodule TokenService.Claims do
 
   @primary_key false
   embedded_schema do
-    field :Name, :string
-    field :Role, :string
-    field :Seed, :string
+    field(:Name, :string)
+    field(:Role, :string)
+    field(:Seed, :string)
   end
 
   @doc """
