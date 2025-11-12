@@ -38,7 +38,8 @@ defmodule TokenService.MixProject do
       {:logger_json, "~> 6.2"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.1"},
-      {:telemetry_metrics_prometheus_core, "~> 1.2"}
+      {:telemetry_metrics_prometheus_core, "~> 1.2"},
+      {:open_api_spex, "~> 3.20"}
     ]
   end
 

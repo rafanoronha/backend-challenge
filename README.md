@@ -34,6 +34,8 @@ A aplicação estará disponível em [`http://localhost:4000`](http://localhost:
 - `GET /health` - Health check
 - `POST /validate` - Valida um token JWT
 - `GET /metrics` - Métricas Prometheus para observabilidade
+- `GET /api/openapi` - Especificação OpenAPI 3.0 em JSON
+- `GET /api/swagger` - Interface Swagger UI para explorar a API
 
 **Exemplo de requisição:**
 
@@ -49,9 +51,19 @@ curl -X POST http://localhost:4000/validate \
 {"valid": true}
 ```
 
+### Swagger UI
+
+Acesse [`http://localhost:4000/api/swagger`](http://localhost:4000/api/swagger) para:
+- Visualizar a especificação OpenAPI completa
+- Testar a API diretamente pelo navegador com 3 exemplos prontos:
+  - **Valid Token**: Token válido que atende todas as regras de negócio
+  - **Invalid Claims**: JWT válido mas com Name contendo números
+  - **Malformed JWT**: JWT com estrutura inválida
+- Explorar os schemas de validação
+
 ### Rodando as suítes de testes
 
-O projeto possui uma suíte de testes abrangente com 60+ testes, incluindo [doctests](https://hexdocs.pm/elixir/docs-tests-and-with.html#doctests) e testes de integração
+O projeto possui 70+ testes, incluindo testes de unidade e de integração.
 
 #### Executar todos os testes
 
@@ -132,6 +144,10 @@ O endpoint `/metrics` expõe métricas em formato Prometheus.
 | `lib/token_service/claims.ex` | Schema Ecto embedded para validação de claims JWT. Implementa todas as regras de negócio (Name, Role, Seed, contagem de claims) |
 | `lib/token_service/token_validator.ex` | Orquestra o fluxo de validação: decodifica JWT, valida claims e emite eventos de telemetria |
 | `lib/token_service/telemetry.ex` | Configuração de Telemetry e definições de métricas Prometheus (HTTP, validação customizada, VM) |
+| `lib/token_service/openapi/` | Módulos relacionados à especificação OpenAPI 3.0 |
+| `lib/token_service/openapi/api_spec.ex` | Especificação OpenAPI 3.0 do serviço, define schemas e operações da API |
+| `lib/token_service/openapi/schemas/validate_request.ex` | Schema OpenAPI para requisição de validação de token |
+| `lib/token_service/openapi/schemas/validate_response.ex` | Schema OpenAPI para resposta de validação de token |
 
 ### Testes
 
@@ -139,4 +155,4 @@ O endpoint `/metrics` expõe métricas em formato Prometheus.
 |---------------|-----------|
 | `test/test_helper.exs` | Configuração do ExUnit para execução de testes |
 | `test/token_service/` | Testes unitários dos módulos principais: `claims_test.exs`, `jwt_decoder_test.exs`, `token_validator_test.exs` e seus respectivos doctests |
-| `test/integration/` | Testes de integração dos endpoints HTTP: `validate_endpoint_test.exs`, `health_endpoint_test.exs`, `metrics_endpoint_test.exs`, `not_found_test.exs` |
+| `test/integration/` | Testes de integração dos endpoints HTTP: `validate_endpoint_test.exs`, `health_endpoint_test.exs`, `metrics_endpoint_test.exs`, `openapi_endpoint_test.exs`, `not_found_test.exs` |
