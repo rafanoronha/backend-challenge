@@ -3,12 +3,21 @@ defmodule TokenService.Router do
 
   alias TokenService.TokenValidator
 
+  plug(Plug.Telemetry, event_prefix: [:http, :request])
   plug(:match)
   plug(Plug.Parsers, parsers: [:json], json_decoder: Jason)
   plug(:dispatch)
 
   get "/health" do
     send_resp(conn, 200, "Healthy")
+  end
+
+  get "/metrics" do
+    metrics = TelemetryMetricsPrometheus.Core.scrape()
+
+    conn
+    |> put_resp_content_type("text/plain")
+    |> send_resp(200, metrics)
   end
 
   post "/validate" do

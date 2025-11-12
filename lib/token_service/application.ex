@@ -10,6 +10,7 @@ defmodule TokenService.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      TokenService.Telemetry,
       {Plug.Cowboy, scheme: :http, plug: TokenService.Router, options: [port: 4000]}
     ]
 

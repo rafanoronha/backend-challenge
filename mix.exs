@@ -35,7 +35,10 @@ defmodule TokenService.MixProject do
       {:joken, "~> 2.6"},
       {:jason, "~> 1.4"},
       {:ecto, "~> 3.12"},
-      {:logger_json, "~> 6.2"}
+      {:logger_json, "~> 6.2"},
+      {:telemetry_metrics, "~> 1.0"},
+      {:telemetry_poller, "~> 1.1"},
+      {:telemetry_metrics_prometheus_core, "~> 1.2"}
     ]
   end
 

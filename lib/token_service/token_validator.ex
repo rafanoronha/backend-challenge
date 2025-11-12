@@ -23,34 +23,50 @@ defmodule TokenService.TokenValidator do
 
   """
   def validate(token) do
-    with {:ok, claims} <- JwtDecoder.decode(token),
-         %Ecto.Changeset{valid?: true} <- Claims.changeset(claims) do
-      Logger.debug("Token validation succeeded",
-        validation_result: "success",
-        claims_count: map_size(claims)
-      )
+    start_time = System.monotonic_time()
 
-      true
-    else
-      {:error, :invalid_token} ->
-        Logger.debug("Token validation failed: invalid or malformed JWT",
-          validation_result: "failed",
-          reason: "invalid_jwt"
+    result =
+      with {:ok, claims} <- JwtDecoder.decode(token),
+           %Ecto.Changeset{valid?: true} <- Claims.changeset(claims) do
+        Logger.debug("Token validation succeeded",
+          validation_result: "success",
+          claims_count: map_size(claims)
         )
 
-        false
+        emit_telemetry(start_time, %{result: "success"})
+        true
+      else
+        {:error, :invalid_token} ->
+          Logger.debug("Token validation failed: invalid or malformed JWT",
+            validation_result: "failed",
+            reason: "invalid_jwt"
+          )
 
-      %Ecto.Changeset{valid?: false} = changeset ->
-        errors = format_changeset_errors(changeset)
+          emit_telemetry(start_time, %{result: "failed", reason: "invalid_jwt"})
+          false
 
-        Logger.debug("Token validation failed: #{errors}",
-          validation_result: "failed",
-          reason: "invalid_claims",
-          errors: errors
-        )
+        %Ecto.Changeset{valid?: false} = changeset ->
+          errors = format_changeset_errors(changeset)
 
-        false
-    end
+          Logger.debug("Token validation failed: #{errors}",
+            validation_result: "failed",
+            reason: "invalid_claims",
+            errors: errors
+          )
+
+          emit_telemetry(start_time, %{result: "failed", reason: "invalid_claims"})
+          false
+      end
+
+    result
+  end
+
+  defp emit_telemetry(start_time, metadata) do
+    :telemetry.execute(
+      [:token_service, :validation],
+      %{duration: System.monotonic_time() - start_time, count: 1},
+      metadata
+    )
   end
 
   defp format_changeset_errors(changeset) do

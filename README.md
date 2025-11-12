@@ -33,6 +33,7 @@ A aplicação estará disponível em [`http://localhost:4000`](http://localhost:
 
 - `GET /health` - Health check
 - `POST /validate` - Valida um token JWT
+- `GET /metrics` - Métricas Prometheus para observabilidade
 
 **Exemplo de requisição:**
 
@@ -91,7 +92,32 @@ mix precommit
 
 ## Observabilidade
 
-### Logs
+### Logs Estruturados
 
-O serviço está configurado com logs estruturados em JSON para ambientes de produção, facilitando integração com plataformas de observabilidade.  
-Em desenvolvimento, os logs são formatados para melhor legibilidade humana.
+- Produção: Logs em formato JSON com metadados estruturados
+- Desenvolvimento: Logs formatados para legibilidade humana
+- Teste: Logs capturáveis para testes, saída console mínima
+
+### Saídas de log
+
+#### Validação de token
+
+![Logs de validação de token](docs/token-validation-logs.png)
+
+### Métricas Prometheus
+
+O endpoint `/metrics` expõe métricas em formato Prometheus.
+
+![Exemplo de métricas](docs/metrics-example.png)
+
+**Métricas HTTP:**
+- `http_request_count` - Total de requisições HTTP (tags: method, path)
+
+**Métricas customizadas:**
+- `token_service_validation_count` - Total de validações por resultado (tags: result=success|failed)
+- `token_service_validation_failure_reasons` - Falhas por motivo (tags: reason=invalid_jwt|invalid_claims)
+
+**Métricas de VM:**
+- `vm_memory_total_bytes` - Memória total usada pela VM
+- `vm_total_run_queue_lengths_total` - Tamanho das filas de execução
+- `vm_system_counts_process_count` - Número de processos Erlang
