@@ -121,3 +121,22 @@ O endpoint `/metrics` expõe métricas em formato Prometheus.
 - `vm_memory_total_bytes` - Memória total usada pela VM
 - `vm_total_run_queue_lengths_total` - Tamanho das filas de execução
 - `vm_system_counts_process_count` - Número de processos Erlang
+
+## Visão geral da codebase
+
+| Módulo | Descrição |
+|--------|-----------|
+| `lib/token_service/application.ex` | Callback de OTP Application. Inicia a árvore de supervisão com Telemetry e servidor HTTP |
+| `lib/token_service/router.ex` | Router HTTP usando Plug. Define os endpoints: `/health`, `/validate`, `/metrics` e tratamento de rotas 404 |
+| `lib/token_service/jwt_decoder.ex` | Decodifica tokens JWT e extrai claims sem verificação de assinatura |
+| `lib/token_service/claims.ex` | Schema Ecto embedded para validação de claims JWT. Implementa todas as regras de negócio (Name, Role, Seed, contagem de claims) |
+| `lib/token_service/token_validator.ex` | Orquestra o fluxo de validação: decodifica JWT, valida claims e emite eventos de telemetria |
+| `lib/token_service/telemetry.ex` | Configuração de Telemetry e definições de métricas Prometheus (HTTP, validação customizada, VM) |
+
+### Testes
+
+| Arquivo/Pasta | Descrição |
+|---------------|-----------|
+| `test/test_helper.exs` | Configuração do ExUnit para execução de testes |
+| `test/token_service/` | Testes unitários dos módulos principais: `claims_test.exs`, `jwt_decoder_test.exs`, `token_validator_test.exs` e seus respectivos doctests |
+| `test/integration/` | Testes de integração dos endpoints HTTP: `validate_endpoint_test.exs`, `health_endpoint_test.exs`, `metrics_endpoint_test.exs`, `not_found_test.exs` |
