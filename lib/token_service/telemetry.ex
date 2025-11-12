@@ -36,7 +36,7 @@ defmodule TokenService.Telemetry do
       counter("token_service.validation.failure_reasons",
         tags: [:reason],
         description: "Token validation failures by reason",
-        keep: fn metadata, _measurements -> Map.has_key?(metadata, :reason) end
+        keep: fn metadata -> Map.has_key?(metadata, :reason) end
       ),
 
       # VM Metrics
