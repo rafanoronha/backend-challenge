@@ -23,7 +23,8 @@ defmodule TokenService.MixProject do
   defp deps do
     [
       {:plug_cowboy, "~> 2.7"},
-      {:joken, "~> 2.6"}
+      {:joken, "~> 2.6"},
+      {:jason, "~> 1.4"}
     ]
   end
 
