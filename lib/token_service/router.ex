@@ -1,6 +1,8 @@
 defmodule TokenService.Router do
   use Plug.Router
 
+  alias TokenService.TokenValidator
+
   plug :match
   plug Plug.Parsers, parsers: [:json], json_decoder: Jason
   plug :dispatch
@@ -10,7 +12,15 @@ defmodule TokenService.Router do
   end
 
   post "/validate" do
-    send_resp(conn, 200, ~s({"valid": false}))
+    with %{"token" => token} <- conn.body_params,
+         valid <- TokenValidator.validate(token),
+         response <- Jason.encode!(%{valid: valid}) do
+      send_resp(conn, 200, response)
+    else
+      _ ->
+        response = Jason.encode!(%{valid: false})
+        send_resp(conn, 200, response)
+    end
   end
 
   match _ do

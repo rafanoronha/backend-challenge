@@ -8,10 +8,10 @@ defmodule TokenService.JwtDecoder do
 
   ## Examples
 
-      iex> decode("eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4ifQ.xxx")
+      iex> TokenService.JwtDecoder.decode("eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4ifQ.xxx")
       {:ok, %{"Role" => "Admin"}}
 
-      iex> decode("invalid")
+      iex> TokenService.JwtDecoder.decode("invalid")
       {:error, :invalid_token}
   """
   def decode(token) when is_binary(token) do
@@ -19,6 +19,8 @@ defmodule TokenService.JwtDecoder do
       {:ok, claims} -> {:ok, claims}
       {:error, _reason} -> {:error, :invalid_token}
     end
+  rescue
+    _ -> {:error, :invalid_token}
   end
 
   def decode(_), do: {:error, :invalid_token}
