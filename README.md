@@ -424,3 +424,27 @@ GitHub (push main) → GitHub Actions → Build Docker Image
 | `test/test_helper.exs` | Configuração do ExUnit para execução de testes |
 | `test/token_service/` | Testes unitários dos módulos principais: `claims_test.exs`, `jwt_decoder_test.exs`, `token_validator_test.exs` e seus respectivos doctests |
 | `test/integration/` | Testes de integração dos endpoints HTTP: `validate_endpoint_test.exs`, `health_endpoint_test.exs`, `metrics_endpoint_test.exs`, `openapi_endpoint_test.exs`, `not_found_test.exs` |
+
+### Infraestrutura
+
+| Arquivo/Pasta | Descrição |
+|---------------|-----------|
+| `priv/terraform/` | Infraestrutura como código (IaC) para deploy na AWS usando Terraform |
+| `priv/terraform/main.tf` | Configuração do provider AWS e backend S3 para Terraform state |
+| `priv/terraform/vpc.tf` | VPC, subnets públicas, Internet Gateway e route tables |
+| `priv/terraform/security_groups.tf` | Security Groups do ALB e ECS Tasks |
+| `priv/terraform/iam.tf` | IAM Roles para ECS Task Execution e Task |
+| `priv/terraform/alb.tf` | Application Load Balancer, target group e listener HTTP |
+| `priv/terraform/ecr.tf` | ECR Repository para imagens Docker com lifecycle policy |
+| `priv/terraform/ecs.tf` | ECS Cluster, Task Definition e Service (Fargate) |
+| `priv/terraform/cloudwatch.tf` | CloudWatch Log Group e alarms (CPU, memória, health) |
+| `priv/terraform/backend-setup.tf` | Provisiona S3 bucket para Terraform state remoto |
+
+### Scripts
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `priv/scripts/infra/setup-aws-backend.sh` | Setup inicial do backend S3 para Terraform state |
+| `priv/scripts/infra/local-build.sh` | Build da imagem Docker localmente para testes |
+| `priv/scripts/infra/deploy-manual.sh` | Deploy manual para AWS (apenas para emergências) |
+| `priv/scripts/infra/check-deployment.sh` | Verifica status do deployment e tasks rodando no ECS |
