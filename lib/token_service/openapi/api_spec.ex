@@ -24,6 +24,10 @@ defmodule TokenService.OpenApi.ApiSpec do
         %Server{
           url: "http://localhost:4000",
           description: "Local server"
+        },
+        %Server{
+          url: "http://token-service-alb-793454956.us-east-1.elb.amazonaws.com",
+          description: "Production server"
         }
       ],
       info: %Info{
