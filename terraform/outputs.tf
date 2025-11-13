@@ -53,3 +53,13 @@ output "target_group_arn" {
   value       = aws_lb_target_group.main.arn
 }
 
+output "ecr_repository_url" {
+  description = "URL do repositório ECR"
+  value       = aws_ecr_repository.main.repository_url
+}
+
+output "ecr_repository_name" {
+  description = "Nome do repositório ECR"
+  value       = aws_ecr_repository.main.name
+}
+
