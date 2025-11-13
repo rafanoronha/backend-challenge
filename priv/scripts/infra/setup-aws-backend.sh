@@ -17,21 +17,50 @@ echo "✅ AWS credentials válidas"
 # Navega para diretório terraform
 cd "$(dirname "$0")/../../terraform"
 
+# Cria bucket S3 diretamente via AWS CLI
+BUCKET_NAME="${PROJECT_NAME:-token-service}-terraform-state"
+REGION="us-east-1"
+
+echo "☁️  Criando bucket S3 para Terraform state..."
+
+# Verifica se bucket já existe
+if aws s3 ls "s3://$BUCKET_NAME" 2>/dev/null; then
+  echo "✅ Bucket já existe: $BUCKET_NAME"
+else
+  # Cria bucket
+  aws s3api create-bucket \
+    --bucket "$BUCKET_NAME" \
+    --region "$REGION" \
+    2>/dev/null || echo "⚠️  Erro ao criar bucket (pode já existir)"
+  
+  # Habilita versionamento
+  aws s3api put-bucket-versioning \
+    --bucket "$BUCKET_NAME" \
+    --versioning-configuration Status=Enabled
+  
+  # Habilita criptografia
+  aws s3api put-bucket-encryption \
+    --bucket "$BUCKET_NAME" \
+    --server-side-encryption-configuration '{
+      "Rules": [{
+        "ApplyServerSideEncryptionByDefault": {
+          "SSEAlgorithm": "AES256"
+        }
+      }]
+    }'
+  
+  # Bloqueia acesso público
+  aws s3api put-public-access-block \
+    --bucket "$BUCKET_NAME" \
+    --public-access-block-configuration \
+      BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+  
+  echo "✅ Bucket criado e configurado: $BUCKET_NAME"
+fi
+
 # Inicializa terraform localmente (sem backend ainda)
 echo "📦 Inicializando Terraform..."
 terraform init
-
-# Provisiona apenas o bucket S3
-echo "☁️  Criando bucket S3 para Terraform state..."
-terraform apply -target=aws_s3_bucket.terraform_state \
-                -target=aws_s3_bucket_versioning.terraform_state \
-                -target=aws_s3_bucket_server_side_encryption_configuration.terraform_state \
-                -target=aws_s3_bucket_public_access_block.terraform_state \
-                -auto-approve
-
-# Obtém nome do bucket
-BUCKET_NAME=$(terraform output -raw terraform_state_bucket)
-echo "✅ Bucket criado: $BUCKET_NAME"
 
 # Reconfigura terraform para usar backend S3
 echo "🔄 Migrando state local para S3..."
