@@ -4,6 +4,17 @@ Microsserviço HTTP para validação de tokens JWT conforme regras de negócio e
 
 O objetivo desse projeto é contemplar os requisitos descritos em [BACKEND-CHALLENGE.md](BACKEND-CHALLENGE.md).
 
+## Registro de decisões arquiteturais
+
+Decisões arquiteturais importantes do projeto foram registradas em [docs/ADR.md](docs/ADR.md).
+
+
+## Stack do projeto
+
+- **Linguagem:** Elixir 1.18+ / Erlang OTP 27+
+- **Framework:** Stack minimalista com Plug + Cowboy (sem Phoenix)
+- **Padrões:** Estrutura simples, sem padrões como Hexagonal/Clean Architecture
+
 ## Ambiente produtivo
 
 Acesse a aplicação na URL http://token-service-alb-793454956.us-east-1.elb.amazonaws.com.  
@@ -122,7 +133,7 @@ O endpoint `/metrics` expõe métricas em formato Prometheus.
 - `vm_total_run_queue_lengths_total` - Tamanho das filas de execução
 - `vm_system_counts_process_count` - Número de processos Erlang
 
-### CI/CD Pipeline
+## CI/CD Pipeline
 
 ```
 GitHub (push main) → GitHub Actions → Build Docker Image
@@ -156,6 +167,13 @@ Workflow **Deploy** do Github Actions
 
 ## Infraestrutura AWS
 
+### Limitações Conhecidas
+
+1. **Single AZ:** Falha em us-east-1a causa downtime
+2. **HTTP apenas:** SSL/TLS não configurado (pode adicionar ACM gratuitamente)
+3. **Sem WAF:** Proteção básica contra DDoS via ALB, mas sem WAF
+4. **Logs retention:** 7 dias apenas (vs 30+ para produção)
+5. **Sem backup:** Stateless, sem dados a fazer backup
 
 ### Arquitetura
 
@@ -220,89 +238,6 @@ Workflow **Deploy** do Github Actions
      └─────────────────────────────────────────────────────────┘
 ```
 
-### Decisões
-
-#### Região: us-east-1 (Norte da Virgínia)
-
-Região mais econômica da AWS. Preços de Fargate ~47% menores que sa-east-1 (São Paulo).
-
-#### Single Availability Zone
-
-Aplicação stateless sem banco de dados não requer multi-AZ. ALB distribui tráfego adequadamente mesmo com tasks em uma única AZ.
-
-Trade-off: Alta disponibilidade reduzida, mas suficiente para demonstração.
-
-#### Subnets Públicas (sem NAT Gateway)
-
-Economia de ~$32/mês eliminando NAT Gateway desnecessário.
-
-Segurança: Security Groups fornecem proteção equivalente para ingress traffic. Tasks só aceitam conexões do ALB na porta 4000.
-
-**Cenário que justificaria uma subnet privada:**
-- Banco de dados (RDS) na arquitetura
-- Requisitos de compliance (PCI-DSS, HIPAA)
-- Necessidade de IP fixo de saída (Elastic IP via NAT)
-- Aplicação com chamadas a APIs externas que validam por IP
-
-**Nosso cenário:**
-- ✅ Stateless, sem dependências externas
-- ✅ Sem armazenamento de dados sensíveis
-- ✅ JWT validation totalmente local
-- ✅ Sem chamadas a APIs externas
-
-#### Sem WAF (Web Application Firewall)
-
-**Cenário que justificaria WAF:**
-- Alto volume de tráfego (e tráfego malicioso)
-- Requisitos de compliance (OWASP Top 10, PCI-DSS)
-- Proteção contra bots, scrapers e ataques automatizados
-- Rate limiting avançado por IP/geolocalização
-
-**Nosso cenário:**
-- ✅ API simples (validação de JWT apenas)
-- ✅ ALB + Security Groups fornecem proteção adequada para um ambiente não crítico
-
-#### ECS Fargate vs EKS vs EC2
-
-| Opção | Custo/mês | Razão |
-|-------|-----------|-------|
-| **ECS Fargate** | ~$29 | ✅ Escolhido - Serverless, zero overhead operacional |
-| EKS | ~$73+ | ❌ Control plane fixo $73/mês + worker nodes |
-| EC2 t3.micro | ~$8 | ❌ Requer gerenciamento manual, menos cloud-native |
-
-#### Compute: 0.25 vCPU / 0.5 GB RAM
-
-Aplicação Elixir é extremamente leve (sem banco, sem I/O). Configuração mínima do Fargate é suficiente.
-
-Testes indicam: ~50-100MB de memória em uso. BEAM VM usa recursos de forma eficiente.
-
-### Recursos Provisionados
-
-**Networking:**
-- 1x VPC (10.0.0.0/16)
-- 1x Internet Gateway
-- 2x Subnets Públicas (us-east-1a, us-east-1b - requisito do ALB)
-- 1x Route Table
-
-**Compute:**
-- 1x ECS Cluster
-- 1x ECS Task Definition (Fargate)
-- 1x ECS Service (desired: 1, tasks apenas em us-east-1a)
-
-**Load Balancing:**
-- 1x Application Load Balancer
-- 1x Target Group (health check: `/health`)
-- 1x Listener (HTTP:80)
-
-**Security:**
-- 2x Security Groups (ALB, ECS Tasks)
-- 2x IAM Roles (Task Execution, Task)
-
-**Container & Logs:**
-- 1x ECR Repository (lifecycle: últimas 10 imagens)
-- 1x CloudWatch Log Group (retention: 7 dias)
-- 1x S3 Bucket (Terraform state, versionado e criptografado)
-
 ### Segurança
 
 **Network Security:**
@@ -346,13 +281,32 @@ Testes indicam: ~50-100MB de memória em uso. BEAM VM usa recursos de forma efic
 - 1 task: ~1000 req/s
 - 3 tasks: ~3000 req/s
 
-### Limitações Conhecidas
+### Recursos Provisionados
 
-1. **Single AZ:** Falha em us-east-1a causa downtime
-2. **HTTP apenas:** SSL/TLS não configurado (pode adicionar ACM gratuitamente)
-3. **Sem WAF:** Proteção básica contra DDoS via ALB, mas sem WAF
-4. **Logs retention:** 7 dias apenas (vs 30+ para produção)
-5. **Sem backup:** Stateless, sem dados a fazer backup
+**Networking:**
+- 1x VPC (10.0.0.0/16)
+- 1x Internet Gateway
+- 2x Subnets Públicas (us-east-1a, us-east-1b - requisito do ALB)
+- 1x Route Table
+
+**Compute:**
+- 1x ECS Cluster
+- 1x ECS Task Definition (Fargate)
+- 1x ECS Service (desired: 1, tasks apenas em us-east-1a)
+
+**Load Balancing:**
+- 1x Application Load Balancer
+- 1x Target Group (health check: `/health`)
+- 1x Listener (HTTP:80)
+
+**Security:**
+- 2x Security Groups (ALB, ECS Tasks)
+- 2x IAM Roles (Task Execution, Task)
+
+**Container & Logs:**
+- 1x ECR Repository (lifecycle: últimas 10 imagens)
+- 1x CloudWatch Log Group (retention: 7 dias)
+- 1x S3 Bucket (Terraform state, versionado e criptografado)
 
 ## Visão geral da codebase
 
