@@ -44,7 +44,7 @@ fi
 echo ""
 
 # URL da aplicação
-cd "$(dirname "$0")/../../../terraform"
+cd "$(dirname "$0")/../../terraform"
 if [ -f terraform.tfstate ] || terraform state list &> /dev/null; then
   echo "🌐 Application URL:"
   terraform output -raw alb_url 2>/dev/null || echo "  (Terraform state não encontrado)"

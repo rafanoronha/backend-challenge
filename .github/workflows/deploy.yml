@@ -48,20 +48,20 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
-        working-directory: terraform
+        working-directory: priv/terraform
         run: terraform init -backend-config=backend.hcl
 
       - name: Terraform Plan
-        working-directory: terraform
+        working-directory: priv/terraform
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply
-        working-directory: terraform
+        working-directory: priv/terraform
         run: terraform apply -auto-approve tfplan
 
       - name: Get Terraform Outputs
         id: terraform_output
-        working-directory: terraform
+        working-directory: priv/terraform
         run: |
           echo "ecr_url=$(terraform output -raw ecr_repository_url)" >> $GITHUB_OUTPUT
           echo "alb_url=$(terraform output -raw alb_url)" >> $GITHUB_OUTPUT

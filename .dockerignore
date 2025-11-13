@@ -27,12 +27,7 @@ doc/
 # CI/CD
 .github/
 
-# Terraform
-terraform/
-.terraform/
-*.tfstate
-*.tfstate.backup
-*.tfvars
+# Terraform (dentro de priv/ não precisa ser excluído explicitamente)
 
 # Scripts de infra
 priv/scripts/

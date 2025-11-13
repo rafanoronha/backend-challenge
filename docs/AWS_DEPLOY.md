@@ -119,7 +119,7 @@ aws logs tail /ecs/token-service --follow --region us-east-1
 Após o deploy, obtenha a URL do Application Load Balancer:
 
 ```bash
-cd terraform
+cd priv/terraform
 terraform output alb_url
 ```
 
@@ -286,7 +286,7 @@ Se sua conta AWS tem < 12 meses:
 Quando não precisar mais:
 
 ```bash
-cd terraform
+cd priv/terraform
 terraform destroy -auto-approve
 ```
 

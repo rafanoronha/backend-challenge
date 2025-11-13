@@ -15,7 +15,7 @@ fi
 echo "✅ AWS credentials válidas"
 
 # Navega para diretório terraform
-cd "$(dirname "$0")/../../../terraform"
+cd "$(dirname "$0")/../../terraform"
 
 # Inicializa terraform localmente (sem backend ainda)
 echo "📦 Inicializando Terraform..."
