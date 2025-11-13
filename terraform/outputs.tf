@@ -93,3 +93,8 @@ output "cloudwatch_log_group_arn" {
   value       = aws_cloudwatch_log_group.main.arn
 }
 
+output "terraform_state_bucket" {
+  description = "Nome do bucket S3 para Terraform state"
+  value       = aws_s3_bucket.terraform_state.id
+}
+

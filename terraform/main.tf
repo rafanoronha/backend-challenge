@@ -8,14 +8,9 @@ terraform {
     }
   }
 
-  # Backend remoto S3 (descomentar após criar bucket)
-  # backend "s3" {
-  #   bucket         = "token-service-terraform-state"
-  #   key            = "prod/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   encrypt        = true
-  #   dynamodb_table = "token-service-terraform-locks"
-  # }
+  # Backend S3 - configurado via GitHub Actions
+  # Para inicializar localmente, use: terraform init -backend-config=backend.hcl
+  # IMPORTANTE: Sempre use GitHub Actions para apply (concurrency control)
 }
 
 provider "aws" {
