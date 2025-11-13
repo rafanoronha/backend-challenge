@@ -63,3 +63,23 @@ output "ecr_repository_name" {
   value       = aws_ecr_repository.main.name
 }
 
+output "ecs_cluster_name" {
+  description = "Nome do ECS Cluster"
+  value       = aws_ecs_cluster.main.name
+}
+
+output "ecs_cluster_id" {
+  description = "ID do ECS Cluster"
+  value       = aws_ecs_cluster.main.id
+}
+
+output "ecs_service_name" {
+  description = "Nome do ECS Service"
+  value       = aws_ecs_service.main.name
+}
+
+output "ecs_task_definition_family" {
+  description = "Family da ECS Task Definition"
+  value       = aws_ecs_task_definition.main.family
+}
+
