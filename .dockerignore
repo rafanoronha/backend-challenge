@@ -1,0 +1,49 @@
+# Build artifacts
+_build/
+deps/
+*.ez
+
+# Testes e documentação
+test/
+erl_crash.dump
+docs/
+doc/
+
+# Configuração local
+.env
+.env.local
+
+# Git
+.git/
+.gitignore
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# CI/CD
+.github/
+
+# Terraform
+terraform/
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+# Temporários
+*.log
+*.tmp
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Documentação markdown
+README.md
+BACKEND-CHALLENGE.md
+AGENTS.md
+
