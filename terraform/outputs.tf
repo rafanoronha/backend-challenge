@@ -3,9 +3,9 @@ output "vpc_id" {
   value       = aws_vpc.main.id
 }
 
-output "public_subnet_id" {
-  description = "ID da subnet pública"
-  value       = aws_subnet.public.id
+output "public_subnet_ids" {
+  description = "IDs das subnets públicas"
+  value       = aws_subnet.public[*].id
 }
 
 output "internet_gateway_id" {
@@ -31,5 +31,25 @@ output "ecs_task_execution_role_arn" {
 output "ecs_task_role_arn" {
   description = "ARN da IAM Role para ECS Task"
   value       = aws_iam_role.ecs_task.arn
+}
+
+output "alb_dns_name" {
+  description = "DNS público do Application Load Balancer"
+  value       = aws_lb.main.dns_name
+}
+
+output "alb_url" {
+  description = "URL completa da aplicação"
+  value       = "http://${aws_lb.main.dns_name}"
+}
+
+output "alb_arn" {
+  description = "ARN do Application Load Balancer"
+  value       = aws_lb.main.arn
+}
+
+output "target_group_arn" {
+  description = "ARN do Target Group"
+  value       = aws_lb_target_group.main.arn
 }
 

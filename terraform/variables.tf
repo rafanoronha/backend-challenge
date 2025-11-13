@@ -22,16 +22,22 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "availability_zone" {
-  description = "Availability Zone para recursos"
+variable "availability_zones" {
+  description = "Availability Zones para ALB (mínimo 2)"
+  type        = list(string)
+  default     = ["us-east-1a", "us-east-1b"]
+}
+
+variable "ecs_availability_zone" {
+  description = "Availability Zone para ECS tasks (single AZ)"
   type        = string
   default     = "us-east-1a"
 }
 
-variable "public_subnet_cidr" {
-  description = "CIDR block para subnet pública"
-  type        = string
-  default     = "10.0.1.0/24"
+variable "public_subnet_cidrs" {
+  description = "CIDR blocks para subnets públicas"
+  type        = list(string)
+  default     = ["10.0.1.0/24", "10.0.2.0/24"]
 }
 
 variable "container_port" {
