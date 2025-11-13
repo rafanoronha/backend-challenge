@@ -34,13 +34,13 @@ defmodule TokenService.Router do
     |> send_resp(200, metrics)
   end
 
-  get "/api/openapi" do
+  get "/openapi" do
     conn
     |> put_resp_content_type("application/json")
     |> send_resp(200, Jason.encode!(ApiSpec.spec()))
   end
 
-  get "/api/swagger" do
+  get "/swagger" do
     html = """
     <!DOCTYPE html>
     <html lang="en">
@@ -54,7 +54,7 @@ defmodule TokenService.Router do
       <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
       <script>
         SwaggerUIBundle({
-          url: '/api/openapi',
+          url: '/openapi',
           dom_id: '#swagger-ui',
         });
       </script>
@@ -65,6 +65,12 @@ defmodule TokenService.Router do
     conn
     |> put_resp_content_type("text/html")
     |> send_resp(200, html)
+  end
+
+  get "/" do
+    conn
+    |> put_resp_header("location", "/swagger")
+    |> send_resp(302, "")
   end
 
   match _ do

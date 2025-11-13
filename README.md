@@ -4,6 +4,21 @@ Microsserviço HTTP para validação de tokens JWT conforme regras de negócio e
 
 O objetivo desse projeto é contemplar os requisitos descritos em [BACKEND-CHALLENGE.md](BACKEND-CHALLENGE.md).
 
+## Ambiente produtivo
+
+Acesse a aplicação na URL http://token-service-alb-793454956.us-east-1.elb.amazonaws.com.  
+Ao fazer um `GET /` o servidor vai te redirecionar para `/swagger`.
+
+## Swagger UI
+
+Acesse a url `/swagger` para:
+- Visualizar a especificação OpenAPI completa
+- Testar a API diretamente pelo navegador com 3 exemplos prontos:
+  - **Valid Token**: Token válido que atende todas as regras de negócio
+  - **Invalid Claims**: JWT válido mas com Name contendo números
+  - **Malformed JWT**: JWT com estrutura inválida
+- Explorar os schemas de validação
+
 ## Ambiente local
 
 ### Pré-requisitos
@@ -20,11 +35,8 @@ mix deps.get
 # Compilar o projeto
 mix compile
 
-# Iniciar o servidor (desenvolvimento)
+# Iniciar o servidor
 mix start
-
-# Ou iniciar com logs estruturados em JSON (produção)
-MIX_ENV=prod mix start
 ```
 
 A aplicação estará disponível em [`http://localhost:4000`](http://localhost:4000).
@@ -34,32 +46,8 @@ A aplicação estará disponível em [`http://localhost:4000`](http://localhost:
 - `GET /health` - Health check
 - `POST /validate` - Valida um token JWT
 - `GET /metrics` - Métricas Prometheus para observabilidade
-- `GET /api/openapi` - Especificação OpenAPI 3.0 em JSON
-- `GET /api/swagger` - Interface Swagger UI para explorar a API
-
-**Exemplo de requisição:**
-
-```bash
-curl -X POST http://localhost:4000/validate \
-  -H "Content-Type: application/json" \
-  -d '{"token": "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiNzg0MSIsIk5hbWUiOiJUb25pbmhvIEFyYXVqbyJ9.QY05sIjtrcJnP533kQNk8QXcaleJ1Q01jWY_ZzIZuAg"}'
-```
-
-**Resposta:**
-
-```json
-{"valid": true}
-```
-
-### Swagger UI
-
-Acesse [`http://localhost:4000/api/swagger`](http://localhost:4000/api/swagger) para:
-- Visualizar a especificação OpenAPI completa
-- Testar a API diretamente pelo navegador com 3 exemplos prontos:
-  - **Valid Token**: Token válido que atende todas as regras de negócio
-  - **Invalid Claims**: JWT válido mas com Name contendo números
-  - **Malformed JWT**: JWT com estrutura inválida
-- Explorar os schemas de validação
+- `GET /openapi` - Especificação OpenAPI 3.0 em JSON
+- `GET /swagger` - Interface Swagger UI para explorar a API
 
 ### Rodando as suítes de testes
 
@@ -123,20 +111,51 @@ O endpoint `/metrics` expõe métricas em formato Prometheus.
 ![Exemplo de métricas](docs/metrics-example.png)
 
 **Métricas HTTP:**
-- `http_request_count` - Total de requisições HTTP (tags: method, path)
+- `http_request_count` - Total de requisições HTTP (tags: `method`, `path`)
 
 **Métricas customizadas:**
-- `token_service_validation_count` - Total de validações por resultado (tags: result=success|failed)
-- `token_service_validation_failure_reasons` - Falhas por motivo (tags: reason=invalid_jwt|invalid_claims)
+- `token_service_validation_count` - Total de validações por resultado (tags: `result=success|failed`)
+- `token_service_validation_failure_reasons` - Falhas por motivo (tags: `reason=invalid_jwt|invalid_claims`)
 
 **Métricas de VM:**
 - `vm_memory_total_bytes` - Memória total usada pela VM
 - `vm_total_run_queue_lengths_total` - Tamanho das filas de execução
 - `vm_system_counts_process_count` - Número de processos Erlang
 
-## Infraestrutura
+### CI/CD Pipeline
 
-A aplicação está preparada para deploy automatizado na AWS usando **Terraform** e **GitHub Actions**.
+```
+GitHub (push main) → GitHub Actions → Build Docker Image
+                                            ↓
+                                    Push to ECR
+                                            ↓
+                                   Update ECS Service
+                                            ↓
+                                   Health Check (/health)
+                                            ↓
+                                   Deploy Completo
+```
+
+#### Continuous Integration (em PRs e pushes)
+
+Workflow **CI** do Github Actions
+ 
+- ✅ Executa testes automatizados
+- ✅ Valida formatação de código
+- ✅ Verifica build do Docker
+
+#### Continuous Deployment (apenas em `main`)
+
+Workflow **Deploy** do Github Actions
+- ✅ Provisiona/atualiza infraestrutura com Terraform
+- ✅ Build da imagem Docker
+- ✅ Push para Amazon ECR
+- ✅ Deploy automático no ECS Fargate
+- ✅ Health checks e rollout seguro
+- ✅ Concurrency control (apenas 1 deploy por vez)
+
+## Infraestrutura AWS
+
 
 ### Arquitetura
 
@@ -201,35 +220,47 @@ A aplicação está preparada para deploy automatizado na AWS usando **Terraform
      └─────────────────────────────────────────────────────────┘
 ```
 
-### Decisões Arquiteturais
+### Decisões
 
 #### Região: us-east-1 (Norte da Virgínia)
 
-**Razão:** Região mais econômica da AWS. Preços de Fargate ~47% menores que sa-east-1 (São Paulo).
+Região mais econômica da AWS. Preços de Fargate ~47% menores que sa-east-1 (São Paulo).
 
 #### Single Availability Zone
 
-**Razão:** Aplicação stateless sem banco de dados não requer multi-AZ. ALB distribui tráfego adequadamente mesmo com tasks em uma única AZ.
+Aplicação stateless sem banco de dados não requer multi-AZ. ALB distribui tráfego adequadamente mesmo com tasks em uma única AZ.
 
-**Trade-off:** Alta disponibilidade reduzida, mas suficiente para demonstração e reduz complexidade operacional.
+Trade-off: Alta disponibilidade reduzida, mas suficiente para demonstração.
 
 #### Subnets Públicas (sem NAT Gateway)
 
-**Razão:** Economia de ~$32/mês eliminando NAT Gateway desnecessário.
+Economia de ~$32/mês eliminando NAT Gateway desnecessário.
 
-**Segurança:** Security Groups fornecem proteção equivalente para ingress traffic. Tasks só aceitam conexões do ALB na porta 4000.
+Segurança: Security Groups fornecem proteção equivalente para ingress traffic. Tasks só aceitam conexões do ALB na porta 4000.
 
-**Quando subnet privada seria necessária:**
+**Cenário que justificaria uma subnet privada:**
 - Banco de dados (RDS) na arquitetura
 - Requisitos de compliance (PCI-DSS, HIPAA)
 - Necessidade de IP fixo de saída (Elastic IP via NAT)
 - Aplicação com chamadas a APIs externas que validam por IP
 
-**Nossa aplicação:**
+**Nosso cenário:**
 - ✅ Stateless, sem dependências externas
 - ✅ Sem armazenamento de dados sensíveis
 - ✅ JWT validation totalmente local
 - ✅ Sem chamadas a APIs externas
+
+#### Sem WAF (Web Application Firewall)
+
+**Cenário que justificaria WAF:**
+- Alto volume de tráfego (e tráfego malicioso)
+- Requisitos de compliance (OWASP Top 10, PCI-DSS)
+- Proteção contra bots, scrapers e ataques automatizados
+- Rate limiting avançado por IP/geolocalização
+
+**Nosso cenário:**
+- ✅ API simples (validação de JWT apenas)
+- ✅ ALB + Security Groups fornecem proteção adequada para um ambiente não crítico
 
 #### ECS Fargate vs EKS vs EC2
 
@@ -241,9 +272,9 @@ A aplicação está preparada para deploy automatizado na AWS usando **Terraform
 
 #### Compute: 0.25 vCPU / 0.5 GB RAM
 
-**Razão:** Aplicação Elixir é extremamente leve (sem banco, sem I/O). Configuração mínima do Fargate é suficiente.
+Aplicação Elixir é extremamente leve (sem banco, sem I/O). Configuração mínima do Fargate é suficiente.
 
-**Testes indicam:** ~50-100MB de memória em uso. BEAM VM usa recursos de forma eficiente.
+Testes indicam: ~50-100MB de memória em uso. BEAM VM usa recursos de forma eficiente.
 
 ### Recursos Provisionados
 
@@ -271,82 +302,6 @@ A aplicação está preparada para deploy automatizado na AWS usando **Terraform
 - 1x ECR Repository (lifecycle: últimas 10 imagens)
 - 1x CloudWatch Log Group (retention: 7 dias)
 - 1x S3 Bucket (Terraform state, versionado e criptografado)
-
-### Estimativa de Custos
-
-| Componente | Custo Semanal | Custo Mensal |
-|------------|---------------|--------------|
-| ECS Fargate (0.25 vCPU, 0.5GB) | $1.86 | $8.00 |
-| Application Load Balancer | $3.72 | $16.00 |
-| ECR (500MB storage) | $0.23 | $1.00 |
-| CloudWatch Logs (1GB/semana) | $0.47 | $2.00 |
-| Data Transfer (estimado) | $0.50 | $2.15 |
-| **TOTAL** | **$6.78** | **$29.15** |
-
-**Economia vs arquitetura tradicional:**
-- Sem NAT Gateway: -$32/mês
-- Sem EKS: -$73/mês
-- Single AZ: -$8/mês (segunda task)
-
-### CI/CD Pipeline
-
-```
-GitHub (push main) → GitHub Actions → Build Docker Image
-                                            ↓
-                                    Push to ECR
-                                            ↓
-                                   Update ECS Service
-                                            ↓
-                                   Health Check (/health)
-                                            ↓
-                                   Deploy Completo
-```
-
-**Continuous Integration (em PRs e pushes):**
-- ✅ Executa testes automatizados
-- ✅ Valida formatação de código
-- ✅ Verifica build do Docker
-
-**Continuous Deployment (apenas em `main`):**
-- ✅ Provisiona/atualiza infraestrutura com Terraform
-- ✅ Build da imagem Docker
-- ✅ Push para Amazon ECR
-- ✅ Deploy automático no ECS Fargate
-- ✅ Health checks e rollout seguro
-- ✅ Concurrency control (apenas 1 deploy por vez)
-
-**Ambientes:**
-- Production: Deploy automático na branch `main`
-
-### Quick Start
-
-1. **Configure AWS credentials no GitHub Secrets:**
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
-
-2. **Execute setup inicial do backend S3:**
-   ```bash
-   ./priv/scripts/infra/setup-aws-backend.sh
-   ```
-
-3. **Push para `main`:**
-   ```bash
-   git push origin main
-   ```
-
-4. **Aguarde o deploy automático via GitHub Actions**
-
-**Documentação completa:** Ver [docs/AWS_DEPLOY.md](docs/AWS_DEPLOY.md)
-
-### Scripts Auxiliares
-
-```bash
-# Build Docker local
-./priv/scripts/infra/local-build.sh
-
-# Verificar status do deployment
-./priv/scripts/infra/check-deployment.sh
-```
 
 ### Segurança
 
@@ -443,5 +398,11 @@ GitHub (push main) → GitHub Actions → Build Docker Image
 |---------|-----------|
 | `priv/scripts/infra/setup-aws-backend.sh` | Setup inicial do backend S3 para Terraform state |
 | `priv/scripts/infra/local-build.sh` | Build da imagem Docker localmente para testes |
-| `priv/scripts/infra/deploy-manual.sh` | Deploy manual para AWS (apenas para emergências) |
 | `priv/scripts/infra/check-deployment.sh` | Verifica status do deployment e tasks rodando no ECS |
+
+### CI/CD
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `.github/workflows/ci.yml` | Workflow de Continuous Integration - executa testes e validações em PRs e pushes |
+| `.github/workflows/deploy.yml` | Workflow de Continuous Deployment - provisiona infra e faz deploy automático na branch `main` |

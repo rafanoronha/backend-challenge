@@ -7,11 +7,11 @@ defmodule TokenService.Integration.OpenApiEndpointTest do
 
   @opts Router.init([])
 
-  describe "GET /api/openapi" do
+  describe "GET /openapi" do
     @tag :integration
     test "returns OpenAPI spec in JSON format" do
       conn =
-        conn(:get, "/api/openapi")
+        conn(:get, "/openapi")
         |> Router.call(@opts)
 
       assert conn.state == :sent
@@ -27,7 +27,7 @@ defmodule TokenService.Integration.OpenApiEndpointTest do
     @tag :integration
     test "includes /validate endpoint in paths" do
       conn =
-        conn(:get, "/api/openapi")
+        conn(:get, "/openapi")
         |> Router.call(@opts)
 
       spec = Jason.decode!(conn.resp_body)
@@ -38,7 +38,7 @@ defmodule TokenService.Integration.OpenApiEndpointTest do
     @tag :integration
     test "includes schemas for ValidateRequest and ValidateResponse" do
       conn =
-        conn(:get, "/api/openapi")
+        conn(:get, "/openapi")
         |> Router.call(@opts)
 
       spec = Jason.decode!(conn.resp_body)
@@ -49,7 +49,7 @@ defmodule TokenService.Integration.OpenApiEndpointTest do
     @tag :integration
     test "includes three request examples" do
       conn =
-        conn(:get, "/api/openapi")
+        conn(:get, "/openapi")
         |> Router.call(@opts)
 
       spec = Jason.decode!(conn.resp_body)
@@ -72,18 +72,18 @@ defmodule TokenService.Integration.OpenApiEndpointTest do
     end
   end
 
-  describe "GET /api/swagger" do
+  describe "GET /swagger" do
     @tag :integration
     test "returns Swagger UI HTML page" do
       conn =
-        conn(:get, "/api/swagger")
+        conn(:get, "/swagger")
         |> Router.call(@opts)
 
       assert conn.state == :sent
       assert conn.status == 200
       assert get_resp_header(conn, "content-type") == ["text/html; charset=utf-8"]
       assert conn.resp_body =~ "swagger-ui"
-      assert conn.resp_body =~ "/api/openapi"
+      assert conn.resp_body =~ "/openapi"
     end
   end
 end

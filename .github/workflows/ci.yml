@@ -50,7 +50,7 @@ jobs:
         run: mix format --check-formatted
 
   docker-build:
-    name: Docker Build Test
+    name: Docker Build
     runs-on: ubuntu-latest
 
     steps:
