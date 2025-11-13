@@ -8,9 +8,12 @@ terraform {
     }
   }
 
-  # Backend S3 - configurado via GitHub Actions
-  # Para inicializar localmente, use: terraform init -backend-config=backend.hcl
+  # Backend S3 - configurado via backend.hcl
+  # GitHub Actions usa: terraform init -backend-config=backend.hcl
   # IMPORTANTE: Sempre use GitHub Actions para apply (concurrency control)
+  backend "s3" {
+    # Configuração via backend.hcl (não hardcoded para segurança)
+  }
 }
 
 provider "aws" {
