@@ -346,9 +346,6 @@ GitHub (push main) → GitHub Actions → Build Docker Image
 
 # Verificar status do deployment
 ./priv/scripts/infra/check-deployment.sh
-
-# Deploy manual (emergência)
-./priv/scripts/infra/deploy-manual.sh
 ```
 
 ### Segurança
