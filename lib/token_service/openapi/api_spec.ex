@@ -4,7 +4,6 @@ defmodule TokenService.OpenApi.ApiSpec do
   """
 
   alias OpenApiSpex.{
-    Example,
     Info,
     MediaType,
     OpenApi,
