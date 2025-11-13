@@ -37,10 +37,9 @@ ENV MIX_ENV=prod
 # Instala dependências do Mix
 COPY mix.exs mix.lock ./
 RUN mix deps.get --only $MIX_ENV
-RUN mkdir config
 
 # Copia arquivos de configuração
-COPY config/config.exs config/
+COPY config config/
 RUN mix deps.compile
 
 # Copia código fonte
