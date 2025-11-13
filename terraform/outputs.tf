@@ -83,3 +83,13 @@ output "ecs_task_definition_family" {
   value       = aws_ecs_task_definition.main.family
 }
 
+output "cloudwatch_log_group_name" {
+  description = "Nome do CloudWatch Log Group"
+  value       = aws_cloudwatch_log_group.main.name
+}
+
+output "cloudwatch_log_group_arn" {
+  description = "ARN do CloudWatch Log Group"
+  value       = aws_cloudwatch_log_group.main.arn
+}
+
