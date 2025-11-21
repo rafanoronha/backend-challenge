@@ -4,6 +4,10 @@ Microsserviço HTTP para validação de tokens JWT conforme regras de negócio e
 
 O objetivo desse projeto é contemplar os requisitos descritos em [BACKEND-CHALLENGE.md](BACKEND-CHALLENGE.md).
 
+## Registro de prompts com a IA
+
+Os prompts utilizados para a IA acelerar a construção do projeto estão documentados em [docs/DEV_AI_PROMPTS.md](docs/DEV_AI_PROMPTS.md) e [docs/INFRA_AI_PROMPTS.md](docs/INFRA_AI_PROMPTS.md).
+
 ## Registro de decisões arquiteturais
 
 Decisões arquiteturais importantes do projeto foram registradas em [docs/ADR.md](docs/ADR.md).
